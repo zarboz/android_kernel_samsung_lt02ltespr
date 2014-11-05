@@ -1770,15 +1770,14 @@ static int __devinit epm_adc_probe(struct platform_device *pdev)
 
 	if (misc_register(&epm_adc->misc)) {
 		dev_err(&pdev->dev, "Unable to register misc device!\n");
-		rc = -EFAULT;
-		goto error;
+		return -EFAULT;
 	}
 
 	rc = epm_adc_init_hwmon(pdev, epm_adc);
 	if (rc) {
 		dev_err(&pdev->dev, "msm_adc_dev_init failed\n");
 		misc_deregister(&epm_adc->misc);
-		goto error;
+		return rc;
 	}
 
 	epm_adc->hwmon = hwmon_device_register(&pdev->dev);
@@ -1786,7 +1785,7 @@ static int __devinit epm_adc_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "hwmon_device_register failed\n");
 		misc_deregister(&epm_adc->misc);
 		rc = PTR_ERR(epm_adc->hwmon);
-		goto error;
+		return rc;
 	}
 
 	mutex_init(&epm_adc->conv_lock);
@@ -1795,10 +1794,6 @@ static int __devinit epm_adc_probe(struct platform_device *pdev)
 	epm_gpio_expander_base_addr = pdata->gpio_expander_base_addr;
 	epm_adc_expander_register = false;
 
-	return rc;
-
-error:
-	kfree(epm_adc);
 	return rc;
 }
 
